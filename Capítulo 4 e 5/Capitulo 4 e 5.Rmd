@@ -1,0 +1,595 @@
+---
+title: "Gráficos do Capítulo 4"
+author: "João Gabriel"
+date: "2023-05-03"
+output: 
+  html_document:
+    overflow: hidden
+    number_sections: yes
+    highlight: tango
+    theme: cerulean
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smmoth_scroll: no
+  pdf_document:
+    toc: yes
+---
+
+# Gráficos do capítulo 4
+
+Nesse capítulo aprendemos novas funções do ggplot, como o facet_wrap. As utilizações desses novos comandos são diversas e permitem a criação de gráficos muito mais customizados e bem separados.
+
+
+O primeiro gráfico é uma linha do tempo que mostra a variação do PIB per capita ao longo do tempo. Utilizei a função geom_line para traçar a linha e adicionei rótulos aos eixos x e y, bem como um título para o gráfico. Ainda assim, é muito ruim esse gráfico, não funciona bem.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+library(gapminder)
+library(ggplot2)
+library(socviz)
+library(tidyverse)
+library(dplyr)
+library(ggrepel)
+
+
+# Definindo tema global para todos os gráficos
+theme_set(theme_minimal())
+
+# Gráfico 1
+grafico1 <- ggplot(gapminder, aes(x = year, y = gdpPercap)) +
+  geom_line() +
+  labs(x = "Ano", y = "PIB per Capita", title = "Variação do PIB per capita ao longo do tempo") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico1
+```
+
+O segundo gráfico é semelhante ao primeiro, mas com diferentes cores para cada país. Isso é alcançado por meio do argumento aes(group = country) na função geom_line.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 2
+grafico2 <- ggplot(gapminder, aes(x = year, y = gdpPercap)) +
+  geom_line(aes(group=country), color = "#0072B2") +
+  labs(x = "Ano", y = "PIB per Capita", title = "Variação do PIB per capita por país") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico2
+```
+
+O terceiro gráfico divide os dados por continente usando a função facet_wrap. Cada continente é mostrado em uma subtrama separada, permitindo a comparação da variação do PIB per capita entre continentes.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 3
+grafico3 <- ggplot(gapminder, aes(x = year, y = gdpPercap)) +
+  geom_line(aes(group=country), color = "#0072B2") +
+  facet_wrap(~continent) +
+  labs(x = "Ano", y = "PIB per Capita", title = "Variação do PIB per capita por continente") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico3
+```
+
+O quarto gráfico também divide os dados por continente, mas utiliza escala logarítmica no eixo y com a função scale_y_log10 para melhor visualização da diferença entre os valores. Além disso, foi adicionada uma linha suavizada usando geom_smooth para indicar a tendência geral dos dados.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 4
+grafico4 <- ggplot(gapminder, aes(x = year, y = gdpPercap)) +
+  geom_line(color = "gray70", aes(group=country)) +
+  geom_smooth(size=1.1, method="loess", se=FALSE, color = "#E69F00") +
+  scale_y_log10(labels=scales::dollar) +
+  facet_wrap(~ continent, ncol=5) +
+  labs(x = "Ano", y = "PIB per Capita", title = "Variação do PIB per capita por continente") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico4
+```
+
+O quinto gráfico mostra a relação entre idade e número de filhos, com diferentes painéis para cada combinação de sexo e raça. Utilizei pontos transparentes (geom_point(alpha = 0.2)) e uma linha de tendência suavizada (geom_smooth) para visualizar a relação geral.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 5
+grafico5 <- ggplot(data = gss_sm, aes(x = age, y = childs)) +
+  geom_point(alpha=0.2, color = "#0072B2") +
+  geom_smooth(color = "#D55E00") +
+  facet_grid(sex~race) +
+  labs(x = "Idade", y = "Número de Filhos", title = "Relação entre Idade e Número de Filhos") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico5
+```
+
+O sexto gráfico é um histograma que mostra a distribuição da contagem de dados por região. Utilizei a função geom_bar para criar o histograma e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 6
+grafico6 <- ggplot(data = gss_sm, aes(x = bigregion)) +
+  geom_bar(fill = "#0072B2") +
+  labs(x = "Região", y = "Contagem", title = "Distribuição por Região") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico6
+```
+
+O sétimo gráfico é semelhante ao sexto, mas agrupa os dados por religião. Utilizei geom_bar e removi a legenda de cores com guides(fill = FALSE).
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 7
+grafico7 <- ggplot(data = gss_sm, aes(x = religion, fill = religion)) +
+  geom_bar() +
+  guides(fill = FALSE) +
+  labs(x = "Religião", y = "Contagem", title = "Distribuição por Religião") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico7
+```
+
+O oitavo gráfico combina os dados de religião e região, mostrando a distribuição da contagem para cada combinação. Utilizei geom_bar e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 8
+grafico8 <- ggplot(data = gss_sm, aes(x = bigregion, fill = religion)) +
+  geom_bar() +
+  labs(x = "Região", y = "Contagem", title = "Distribuição por Religião e Região") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico8
+```
+
+O nono gráfico é uma versão proporcional do oitavo gráfico, onde a altura das barras representa a proporção em vez da contagem. Utilizei geom_bar(position = "fill") para ajustar as alturas das barras proporcionalmente.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 9
+grafico9 <- ggplot(data = gss_sm, aes(x = bigregion, fill = religion)) +
+  geom_bar(position = "fill") +
+  labs(x = "Região", y = "Proporção", title = "Distribuição Proporcional por Religião e Região") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico9
+```
+
+O décimo gráfico é uma variação do nono, onde as barras são agrupadas por religião e separadas por região. Utilizei geom_bar(position = "dodge") para criar grupos de barras lado a lado.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 10
+grafico10 <- ggplot(data = gss_sm, aes(x = bigregion, fill = religion)) +
+  geom_bar(position = "dodge", aes(y = ..prop.., group = religion)) +
+  labs(x = "Região", y = "Proporção", title = "Distribuição Proporcional por Religião e Região") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico10
+```
+
+O décimo primeiro gráfico é uma versão do décimo gráfico, mas com painéis separados para cada região. Utilizei facet_wrap para criar os painéis e geom_bar(position = "dodge") para agrupar as barras.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 11
+grafico11 <- ggplot(data = gss_sm, aes(x = religion, fill = bigregion)) +
+  geom_bar(position = "dodge", aes(y = ..prop.., group = bigregion)) +
+  facet_wrap(~bigregion, ncol = 2) +
+  labs(x = "Religião", y = "Proporção", title = "Distribuição Proporcional de Religião por Região") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico11
+```
+
+O décimo segundo gráfico é um histograma que mostra a distribuição da área por estado. Utilizei geom_histogram com bins = 10 para criar os histogramas e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 12
+grafico12 <- ggplot(data = midwest, aes(x = area, fill = state)) +
+  geom_histogram(bins = 10) +
+  labs(x = "Área", y = "Contagem", title = "Distribuição da Área por Estado") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico12
+```
+
+O décimo terceiro gráfico é semelhante ao décimo segundo, mas limitado aos estados de Ohio e Wisconsin. Utilizei subset para selecionar apenas os dados desses estados e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 13
+oh_wi <- c("OH", "WI")
+
+grafico13 <- ggplot(data = subset(midwest, state %in% oh_wi),
+                    aes(x = percollege, fill = state)) +
+  geom_histogram(bins = 20, alpha = 0.4) +
+  labs(x = "% com Educação Universitária", y = "Contagem", title = "Distribuição da Educação Universitária em OH e WI") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico13
+```
+
+O décimo quarto gráfico é uma estimativa da densidade da distribuição da área. Utilizei geom_density para criar uma curva de densidade e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 14
+grafico14 <- ggplot(data = midwest, aes(x = area)) +
+  geom_density(fill = "#0072B2", color = "white") +
+  labs(x = "Área", y = "Densidade", title = "Distribuição de Densidade da Área") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico14
+```
+
+O décimo quinto gráfico é semelhante ao décimo quarto, mas com cores e linhas diferentes para cada estado. Utilizei geom_density e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 15
+grafico15 <- ggplot(data = midwest, aes(x = area, fill = state, color = state)) +
+  geom_density(alpha = 0.3) +
+  labs(x = "Área", y = "Densidade", title = "Distribuição de Densidade da Área por Estado") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico15
+```
+
+O décimo sexto gráfico é uma versão normalizada do décimo quinto gráfico, onde as densidades são escalonadas para melhor comparação entre os estados. Utilizei geom_density com aes(y = ..scaled..) e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 16
+grafico16 <- ggplot(data = subset(midwest, state %in% oh_wi), aes(x = area, fill = state, color = state)) +
+  geom_density(alpha = 0.3, aes(y = ..scaled..)) +
+  labs(x = "Área", y = "Densidade", title = "Distribuição de Densidade da Área Normalizada em OH e WI") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico16
+```
+
+O décimo sétimo gráfico é um gráfico de barras que mostra a distribuição percentual de sobreviventes do Titanic por gênero. Utilizei geom_bar com position = "dodge" e personalizei os rótulos dos eixos e o título do gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 17
+grafico17 <- ggplot(data = titanic, aes(x = fate, y = percent, fill = sex)) +
+  geom_bar(position = "dodge", stat = "identity") +
+  labs(x = "Destino", y = "Porcentagem", title = "Distribuição de Sobreviventes por Gênero") +
+  theme(plot.title = element_text(size = 16, face = "bold"), legend.position = "top")
+
+grafico17
+```
+
+O décimo oitavo gráfico é um gráfico de colunas que mostra a diferença na expectativa de vida americana em relação à média da OECD ao longo do tempo. Utilizei geom_col para criar as colunas e personalizei os rótulos dos eixos, o título do gráfico e adicionei uma legenda para a cor.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico 18
+grafico18 <- ggplot(data = oecd_sum, aes(x = year, y = diff, color = hi_lo)) +
+  geom_col(fill = "#0072B2") +
+  guides(fill = FALSE) +
+  labs(x = NULL, 
+       y = "Diferença nos Anos",
+       title = "Diferença na Expectativa de Vida Americana",
+       subtitle = "A diferença entre a expectativa de vida dos Estados Unidos e da OECD, 1960-2015",
+       caption = "Data: OECD, publicado no Washington Post, 27 de Dezembro de 2017") +
+  theme(plot.title = element_text(size = 16, face = "bold"))
+
+grafico18
+```
+
+# Gráficos do capítulo 5
+
+No capítulo cinco focamos no tidyverse em geral, principalmente no dplyr. Aprendemos a usar pipes e manipulamos dados para criarmos gráficos diferentes. Os dados desse capítulo são bem variados.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+rel_by_region <- gss_sm %>%
+  group_by(bigregion, religion) %>%
+  summarize(N = n()) %>%
+  mutate(freq = N/sum(N),
+         pct = round((freq*100), 0))
+
+rel_by_region
+
+rel_by_region %>% 
+  group_by(bigregion) %>% 
+  summarize(total = sum(pct))
+
+rel_by_region
+
+# Gráfico A
+graficoA <- ggplot(rel_by_region, aes(x = bigregion, y = pct, fill = religion)) +
+  geom_col(position = "dodge2") +
+  labs(x = "Região", y = "Percentagem", fill = "Religião") +
+  theme(legend.position = "top")
+
+graficoA
+```
+
+Este gráfico de barras agrupadas mostra a distribuição da frequência das religiões em diferentes regiões. O eixo x representa a região e o eixo y representa a porcentagem de ocorrência de cada religião. A função geom_col é utilizada para criar as barras agrupadas. A legenda é posicionada na parte superior do gráfico utilizando theme(legend.position = "top").
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico B
+graficoB <- ggplot(rel_by_region, aes(x = religion, y = pct, fill = religion)) +
+  geom_col(position = "dodge2") +
+  labs(x = "Religião", y = "Percentagem", fill = "Religião") +
+  guides(fill = FALSE) +
+  coord_flip() +
+  facet_grid(~bigregion) +
+  scale_fill_brewer(palette = "Set3") +
+  theme(strip.text = element_text(size = 12, face = "bold"))
+
+graficoB
+```
+
+Este gráfico de barras agrupadas mostra a distribuição da frequência das religiões em diferentes regiões, mas com os eixos x e y trocados em relação ao gráfico anterior. A função coord_flip é utilizada para inverter os eixos. O gráfico é facetado por região utilizando a função facet_grid. A escala de cores é definida utilizando a paleta "Set3" da função scale_fill_brewer.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico C
+graficoC <- ggplot(organdata, aes(x = year, y = donors)) +
+  geom_line(aes(group = country, color = country)) +
+  facet_wrap(~country) +
+  labs(x = "Ano", y = "Doadores") +
+  theme(legend.position = "top") +
+  scale_color_brewer(palette = "Paired")
+
+graficoC
+```
+
+Este gráfico de linhas mostra a evolução do número de doadores de órgãos ao longo dos anos para cada país. A função geom_line é utilizada para traçar as linhas para cada país. O gráfico é facetado por país utilizando facet_wrap. A legenda é posicionada na parte superior do gráfico utilizando theme(legend.position = "top"). A escala de cores é definida utilizando a paleta "Paired" da função scale_color_brewer.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico D
+graficoD <- ggplot(organdata, aes(x = country, y = donors)) +
+  geom_boxplot(fill = "#FF6F00") +
+  coord_flip() +
+  labs(x = "País", y = "Doadores") +
+  theme(legend.position = "top")
+
+graficoD
+```
+
+Este gráfico de boxplot mostra a distribuição dos números de doadores de órgãos por país. A função geom_boxplot é utilizada para criar os boxplots. Os eixos x e y são invertidos utilizando coord_flip. O título dos eixos é definido utilizando labs. A legenda é posicionada na parte superior do gráfico utilizando theme(legend.position = "top").
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico E
+graficoE <- ggplot(organdata, aes(x = reorder(country, donors, na.rm = TRUE), y = donors, fill = world)) +
+  geom_boxplot() +
+  labs(x = NULL, y = "Doadores") +
+  coord_flip() +
+  theme(legend.position = "top") +
+  scale_fill_brewer(palette = "Pastel1") +
+  guides(fill = guide_legend(title = "Mundo"))
+
+graficoE
+```
+
+Este gráfico de boxplot mostra a distribuição dos números de doadores de órgãos por país, com os países ordenados de acordo com a mediana do número de doadores. A função reorder é utilizada para reordenar os países. A paleta de cores "Pastel1" é usada para deixar mais bonito o gráfico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico F
+graficoF <- ggplot(organdata, aes(x = reorder(country, donors, na.rm = TRUE), y = donors, color = world)) +
+  geom_point(size = 3) +
+  labs(x = NULL, y = "Doadores") +
+  coord_flip() +
+  theme(legend.position = "top") +
+  scale_color_brewer(palette = "Set2") +
+  guides(color = guide_legend(title = "Mundo"))
+
+graficoF
+```
+
+Este gráfico de dispersão mostra o número de doadores de órgãos por país, com os países ordenados de acordo com o número de doadores. A função reorder é utilizada para reordenar os países. A legenda de cores é definida utilizando scale_color_brewer(palette = "Set2").
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+by_country <- organdata %>% 
+  group_by(consent_law, country) %>%
+  summarize(donors_mean = mean(donors, na.rm = TRUE),
+            donors_sd = sd(donors, na.rm = TRUE),
+            gdp_mean = mean(health, na.rm = TRUE),
+            health_mean = mean(health, na.rm = TRUE),
+            roads_mean = mean(roads, na.rm = TRUE),
+            cerebvas_mean = mean(cerebvas, na.rm = TRUE))
+
+by_country
+
+by_country <- organdata %>% group_by(consent_law, country) %>%
+  summarize_if(is.numeric, funs(mean, sd), na.rm = TRUE) %>%
+  ungroup()
+
+by_country
+
+
+# Gráfico G
+graficoG <- ggplot(by_country, aes(x = donors_mean, y = reorder(country, donors_mean), color = consent_law)) +
+  geom_point(size = 3) +
+  labs(x = "Taxa de Captação de Doadores", y = NULL, color = "Lei de Consentimento") +
+  theme(legend.position = "top") +
+  scale_color_brewer(palette = "Dark2")
+
+graficoG
+```
+
+Mostra a taxa de captação de doadores em relação ao país, diferenciando as leis de consentimento através das cores. Utiliza pontos para representar os dados. Coloquei uma paleta de cores e ajustei o tema para deixá-lo mais bonito.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico H
+graficoH <- ggplot(by_country, aes(x = donors_mean, y = reorder(country, donors_mean))) +
+  geom_point(size = 3, aes(color = consent_law)) +
+  labs(x = "Doadores", y = NULL, color = "Lei de Consentimento") +
+  facet_wrap(~consent_law, scales = "free_y", ncol = 1) +
+  theme(legend.position = "top") +
+  scale_color_brewer(palette = "Dark2")
+
+graficoH
+```
+
+Similar ao Gráfico G, mas com painéis separados por lei de consentimento. Permite comparar a taxa de captação de doadores entre países e leis de consentimento. O mesmo tema foi usado, além dos textos traduzidos.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico I
+graficoI <- ggplot(by_country, aes(x = reorder(country, donors_mean), y = donors_mean)) +
+  geom_pointrange(aes(ymin = donors_mean - donors_sd, ymax = donors_mean + donors_sd)) +
+  labs(x = NULL, y = "Doadores") +
+  coord_flip() +
+  theme(legend.position = "top")
+
+graficoI
+```
+
+Apresenta a média de doadores por país, com intervalos de confiança. Os países são ordenados de acordo com a média de doadores. O eixo x é invertido e o tema redefenido com o código.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+
+elections_historic %>% select(2:7)
+
+p_title <- "Eleições Presidenciais: Colégio Eleitoral Popular e Marginal"
+p_subtitle <- "1824-2016"
+p_caption <- "Dados de 2016 são provisórios."
+x_label <- "Porcentagem de Voto Popular do Vencedor"
+y_label <- "Porcentagem de Votos de Colégios Eleitorais do Vencedor"
+
+
+# Gráfico J
+graficoJ <- ggplot(by_country, aes(x = roads_mean, y = donors_mean)) +
+  geom_point(aes(color = consent_law), size = 3) +
+  geom_text(aes(label = country), hjust = 0, nudge_y = 1) +
+  labs(x = "Estradas", y = "Doadores") +
+  theme(legend.position = "top") +
+  scale_color_brewer(palette = "Paired")
+graficoJ
+```
+
+Relaciona o número de estradas com a quantidade de doadores, destacando as leis de consentimento por cores. Cada ponto representa um país. Os títulos e legendas foram salvas em variáveis dessas vez, o que permite melhor controle do código.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico K
+graficoK <- ggplot(elections_historic, aes(x = popular_pct, y = ec_pct, label = winner_label)) +
+  geom_hline(yintercept = 0.5, size = 1.4, color = "gray80") +
+  geom_vline(xintercept = 0.5, size = 1.4, color = "gray80") +
+  geom_point(size = 3, color = "#E41A1C") +
+  geom_text_repel() +
+  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Porcentagem de Votos Populares do Vencedor", y = "Porcentagem de Votos dos Colégios Eleitorais do Vencedor") +
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        plot.subtitle = element_text(size = 12, face = "italic"),
+        plot.caption = element_text(size = 10),
+        legend.position = "top",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
+  labs(x = x_label,
+       y = y_label,
+       title = p_title,
+       subtitle = p_subtitle,
+       caption = p_caption)
+
+
+graficoK
+```
+
+Mostra a relação entre a porcentagem de votos populares e a porcentagem de votos dos colégios eleitorais em eleições presidenciais. Utiliza pontos e rótulos para identificar como os vencedores ganharam a eleição e seu total de votos.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico L
+graficoL <- ggplot(by_country, aes(x = gdp_mean, y = health_mean)) +
+  geom_point(size = 3, color = "#377EB8") +
+  geom_text_repel(data = subset(by_country, gdp_mean > 25000), aes(label = country), color = "#377EB8") +
+  labs(x = "Média de PIB", y = "Média de Saúde") +
+  theme(legend.position = "top")
+
+graficoL
+```
+
+Apresenta a média de PIB em relação à média de saúde por país. Utiliza pontos para representar os dados, com rótulos para países com PIB acima de 25000. Possui uma cor diferenciada e pontos maiores para melhor vizualização.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico M
+graficoM <- ggplot(by_country, aes(x = gdp_mean, y = health_mean)) +
+  geom_point(size = 3, color = "#984EA3") +
+  geom_text_repel(data = subset(by_country, gdp_mean > 25000 | health_mean < 1500 | country %in% "Belgium"),
+                  aes(label = country), color = "#984EA3") +
+  labs(x = "Média de PIB", y = "Média de Saúde") +
+  theme(legend.position = "top")
+
+graficoM
+```
+
+Similar ao Gráfico anterior, mas com mais países destacados devido a critérios específicos (PIB acima de 25000 ou saúde abaixo de 1500 ou apenas ser a Bélgica). Com os destaques, podemos focar na informação que queremos passar
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico N
+organdata$ind <- organdata$ccode %in% c("Ita", "Spa") & organdata$year > 1998
+
+graficoN <- ggplot(organdata, aes(x = roads, y = donors, color = ind)) +
+  geom_point(size = 3) +
+  geom_text_repel(data = subset(organdata, ind), aes(label = ccode)) +
+  guides(label = FALSE, color = FALSE) +
+  labs(x = "Estradas", y = "Doadores") +
+  theme(legend.position = "top") +
+  scale_color_manual(values = c("#D55E00", "#0072B2"))
+
+graficoN
+```
+
+Relaciona o número de estradas com a quantidade de doadores, diferenciando países específicos por cor. Utiliza pontos e rótulos para representar os países. As cores agora foram modificadas para embelezamento.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico O
+graficoO <- ggplot(organdata, aes(x = roads, y = donors)) +
+  geom_point(size = 3) +
+  annotate(geom = "text", x = 91, y = 33, label = "Um número surpreendente\nde recuperações",
+           hjust = 0, color = "#56B4E9", size = 6) +
+  labs(x = "Estradas", y = "Doadores") +
+  theme(legend.position = "top")
+
+graficoO
+```
+
+Apresenta o número de estradas em relação à quantidade de doadores. Destaca um ponto específico com um retângulo e um rótulo para chamar atenção. Os textos foram traduzidos e as cores modificadas.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico P
+graficoP <- ggplot(organdata, aes(x = roads, y = donors)) +
+  geom_point() +
+  annotate(geom = "rect", xmin = 125, xmax = 155, ymin = 30, ymax = 35, fill = "red", alpha = 0.2) +
+  annotate(geom = "text", x = 157, y = 33, label = "Um número surpreendente\nde recuperações", hjust = 0) +
+  labs(x = "Estradas", y = "Doadores") +
+  theme(legend.position = "top")
+
+graficoP
+```
+
+Similar ao Gráfico anterior, mas utiliza um retângulo e um rótulo para destacar um ponto específico, deixando mais clara a informação. Seu estilo é mais limpo que o anterior, permitindo melhor passagem da informação que queríamos.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico Q
+graficoQ <- ggplot(organdata, aes(x = roads, y = donors, color = world)) +
+  geom_point() +
+  labs(x = "Estradas", y = "Doadores", color = "Mundo") +
+  theme(legend.position = "top") +
+  scale_color_manual(values = c("blue", "red", "black"))
+
+graficoQ
+```
+
+Relaciona o número de estradas com a quantidade de doadores, diferenciando o mundo por cores. Utiliza pontos para representar os dados. As cores foram modificadas e os textos traduzidos.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico R
+graficoR <- ggplot(organdata, aes(x = roads, y = donors, color = world)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_x_continuous(breaks = c(5, 15, 25), labels = c("Cinco", "Quinze", "Vinte e Cinco")) +
+  labs(x = "Mortes na Estrada", y = "Pedido por Sangue", color = "Mundo") +
+  theme(legend.position = "top") +
+  scale_color_manual(values = c("blue", "red", "black"))
+
+graficoR
+```
+
+Similar ao Gráfico anterior, mas com escala logarítmica no eixo x e rótulos personalizados para os valores da escala, tudo isso modifica a forma no qual os dados são apresentados.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+# Gráfico S
+graficoS <- ggplot(organdata, aes(x = roads, y = donors, color = world)) +
+  geom_point() +
+  labs(x = "Mortes na Estrada", y = "Pedido por Sangue") +
+  theme(legend.position = "top") +
+  guides(color = FALSE)
+
+graficoS
+```
+
+Apresenta o número de mortes na estrada em relação à quantidade de doadores. Não diferencia o mundo por cores, apenas utiliza pontos para representar os dados. Foram retirados os "guides" para o gráfico ficar mais simples.
+
+# Conclusão
+
+Foi um trabalho díficil e cheio de detalhes, com muita edição de gráficos e formas de alterá-los, mas foi útil para descobrir ainda mais comandos úteis do ggplot e do tidyverse em geral. Os gráficos com facet_wrap ficam bem interessantes.
+

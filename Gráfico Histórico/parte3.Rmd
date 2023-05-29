@@ -1,0 +1,132 @@
+---
+title: "Grafico Historico"
+author: "João Gabriel"
+date: "2023-05-30"
+output: 
+  html_document:
+    number_sections: yes
+    highlight: tango
+    theme: cerulean
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smmoth_scroll: no
+  pdf_document:
+    toc: yes
+---
+
+```{r, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+```{r, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+library(utf8)
+Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+```
+
+# Gráfico Histórico
+
+Na parte C do trabalho nos é proposto programarmos um gráfico histórico usando ggplot2 usando como base o gráfico de Minard de 1812, que fala sobre a falha da operação de Napoleão para a invasão da Russia.
+
+Essa atividade foi proposta para vermos o potencial do ggplot e suas diversas ferramentas, não apenas sua facilidade em fazer gráficos de linhas, barras ou dispersão, mas também gráficos mais complexos e com muitas variáveis.
+
+## A Tentativa de Invasão de Napoleão à Russia
+
+O gráfico de Minard é uma visualização histórica da campanha de Napoleão na Rússia em 1812. Ele foi criado pelo estatístico Charles Joseph Minard e é um dos mais famosos e antigos exemplos de visualização de dados. O gráfico mostra o avanço do exército de Napoleão em direção a Moscou e sua derrota no retorno para a França.
+
+A primeira parte mostra o avanço do exército francês em direção a Moscou. A linha turquesa mais grossa representa a marcha do exército em direção à Rússia, que começou com 422.000 soldados. A linha preta mais fina representa a retirada do exército, depois da invasão e captura de Moscou pelos franceses.
+
+Os números ao longo das linhas representam o tamanho do exército em cada etapa da campanha. A linha azul no gráfico a baixo e sua legenda representa a temperatura em graus Celsius, que caiu drasticamente quando o exército entrou na Rússia e começou a retornar. O exército começou com 422.000 soldados, mas apenas cerca de 100.000 sobreviveram para chegar a Moscou. Na retirada da Rússia, apenas cerca de 10.000 soldados voltaram para casa.
+
+
+## Gráficos separados
+
+Aqui temos o gráfico dos vivos durante a ida e a volta dos franceses da Russia. Abaixo, temos a temperatura durante o inverno russo nesse período. Fiz mudanças nas cores dos gráficos, nas cores das linhas e também coloquei em negrito as legendas. Ademais, usei temas e coloquei, usando a biblioteca ggimage, a bandeira da frança no fundo do gráfico.
+
+```{r, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggpubr)
+library(png)
+library(grid)
+library(ggimage)
+
+
+# carrega a imagem da bandeira da França
+img <- readPNG("france-flag.png")
+
+
+cities <- read.table("cities.txt",
+                     header = TRUE, stringsAsFactors = FALSE)
+
+troops <- read.table("troops.txt",
+                     header = TRUE, stringsAsFactors = FALSE)
+
+temps <- read.table("temps.txt",
+                    header = TRUE, stringsAsFactors = FALSE) %>%
+  mutate(date = dmy(date))  # Convert string to actual date
+
+temps.nice <- temps %>%
+  mutate(nice.label = paste0(temp, "°, ", month, ". ", day))
+
+
+march.1812.plot.simple <- ggplot() +  background_image(img) +
+  geom_path(data = troops, aes(x = long, y = lat, group = group, 
+                               color = direction, size = survivors),
+            lineend = "round") +
+  geom_point(data = cities, aes(x = long, y = lat),
+             color = "#DC5B44") +
+  geom_label(data = cities, aes(x = long, y = lat, label = city, fontface = "bold"),
+             color = "#DC5B44") +
+  scale_size(range = c(0.5, 10)) + 
+  scale_colour_manual(values = c("turquoise", "#252523")) +
+  guides(color = FALSE, size = FALSE) +
+  theme_bw() +
+  labs(x = "Longitude", y = "Latitude") +
+  theme(axis.text = element_text(face = "bold"),
+        axis.title = element_text(face = "bold")) +
+  ggtitle("Caminhada de Napoleleão à Russia e sua retirada")
+  
+
+
+
+
+# Change the x-axis limits to match the simple map
+temps.1812.plot <- ggplot(data = temps.nice, aes(x = long, y = temp)) +
+  geom_line(size = 3, color = "lightblue") +
+  geom_label(aes(label = nice.label),
+            size = 3,
+            color = "blue") + 
+  labs(x = NULL, y = "° Celsius") +
+  scale_x_continuous(limits = ggplot_build(march.1812.plot.simple)$layout$panel_ranges[[1]]$x.range) +
+  scale_y_continuous(position = "left") +
+  coord_cartesian(ylim = c(-35, 5)) +  
+  theme_bw() +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        axis.text.x = element_blank(), axis.ticks = element_blank(),
+        panel.border = element_blank())
+
+march.1812.plot.simple
+temps.1812.plot
+
+graph <- ggarrange(march.1812.plot.simple, temps.1812.plot + rremove("x.text"),
+          heights = c(2, 0.7),
+          ncol = 1, nrow = 2)
+
+```
+
+## Gráficos unidos
+
+Após feitos os dois gráficos e suas mudanças, usei o comando ggarrange da biblioteca ggpubr para fazer a ligação entre os dois gráficos e deixá-los numa mesma imagem, afivelando-os juntos. 
+
+
+```{r, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+graph
+```
+
+# Conclusão
+
+Essa visualização é uma das mais incríveis da história da estatística e eu achei ela muito interessante. O autor conseguiu exemplificar muitas variáveis com um simples gráfico, com muita clareza. Com ela, é possível receber muitíssima informação que seriam necessárias diversas páginas de texto para explicar. Muito bom ver também que o ggplot possui bons comandos para algo mais complexo.
+

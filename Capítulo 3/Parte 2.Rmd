@@ -1,0 +1,190 @@
+---
+title: "Quarteto de Anscombe"
+author: "João Gabriel"
+date: "2023-05-03"
+output: 
+  html_document:
+    number_sections: yes
+    highlight: tango
+    theme: cerulean
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smmoth_scroll: no
+  pdf_document:
+    toc: yes
+---
+
+```{r, message=FALSE, error=FALSE, warning=FALSE, echo=FALSE}
+library(gapminder)
+library(ggplot2)
+
+graph0 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp))
+
+graph1 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = 'red'))
+
+  
+graph2 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent))
+
+
+graph3 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.8, size = 1, aes(color = continent)) + 
+  geom_smooth(method = "loess") + 
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme_linedraw()
+
+
+graph4 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(color = "black") + 
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE, color = "blue", size = 2, alpha = 0.1) + 
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme_bw() +
+  theme(panel.grid.major = element_line(colour = "gray80", size = 0.2))
+
+graph5 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(size = 2, aes(color = log(pop))) + 
+  scale_x_log10() +
+  theme_test() +
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme(panel.grid.major = element_line(color = "gray80", size = 0.2),
+        panel.grid.minor = element_line(color = "gray80"))
+
+
+```
+
+```{r, echo = FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide', eval=FALSE}
+library(utf8)
+Sys.setlocale("LC_CTYPE", "en_US.UTF-8")
+```
+
+# Gráficos do capítulo 3
+## Conteúdo do capítulo
+
+No Capítulo 3 do livro Healy apresenta como nós fazemos gráficos com R ee ggplot, com diversos comandos do pacote para a criação de gráficos. É possível ver que ela foca em ensinar os gráficos mais simples e o básico de como fazer o design de seu gráfico, ensinando-nos a manipular as variáveis nos gráficos e mexer com cor, pontos e retas. Dos comandos citados temos:
+
+ggplot(): função usada para criar um objeto ggplot que servirá como base para a criação do gráfico;
+aes(): função usada para definir as variáveis que serão mapeadas para as estéticas do gráfico (como cor, tamanho e forma);
+geom_point(): função usada para criar gráficos de dispersão;
+geom_smooth(): função usada para adicionar retas de regressão linear.
+
+# Gráficos criados:
+
+O capítulo apresenta mais de 10 gráficos exemplos criados pelo autor para ensinar-nos. Os exemplos vão desde os mais simples aos mais complexos, evoluindo gradualmente, sem focar na parte estética, que foi adicionada por mim a partir de ideias do capítulo 8 e pesquisas extras na internet.
+
+## Gráficos iniciais
+
+Inicialmente o capítulo foca em nos ensinar a fazer scatter plots e linhas de regressão, além de criar nossa área do gráfico.
+
+```{r, echo = FALSE, warning=FALSE, error=FALSE, message=FALSE}
+graph0 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp))
+
+graph0
+graph0 + geom_point()
+graph0 + geom_smooth()
+graph0 + geom_point() + geom_smooth(color = "blue")
+graph0 + geom_point(color="grey") + geom_smooth(color = "blue", method = "lm") +
+  theme_linedraw()
+```
+
+O primeiro gráfico é apenas uma sistema de coordenadas sem pontos, porém podemos adicionar os pontos e a reta em cima dele para trabalhar. No fim, temos um gráfico com um tema próprio, pontos e uma reta de regressão linear.
+
+
+## Gráficos com escala logarítimica.
+
+A partir desses gráficos aprendemos a utilizar a função scale_x_log10(), que faz os valores de x evoluirem exponencialmente, demostrando ainda mais uma maior correlação entre as variáveis.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+graph1 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = 'red'))
+
+graph1 + geom_point() + 
+  geom_smooth(method = "loess") + 
+  scale_x_log10()
+
+graph1 + geom_point(color = 'red') + 
+  geom_smooth(method = "loess", color = 'purple') + 
+  scale_x_log10() +
+  theme_bw()
+
+graph1 + geom_point(alpha = 0.4) + 
+  geom_smooth(method = "lm", color = "darkred") + 
+  scale_x_log10() +
+  theme_bw() +
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+```
+
+## Gráfico com distinção
+
+Nesses gráficos agora há uma divisão entre os continentes por cores. Assim, nos é possível observar quais são as diferenças em cada continente em específico.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+  
+graph2 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent))
+
+graph2 + geom_point(alpha = 0.5, size = 1) + 
+  geom_smooth(method = "loess") + 
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme_linedraw() +
+  theme(
+      text = element_text(
+        size = 10,
+        face = "italic",
+        color = "darkblue"
+      ),
+      legend.text = element_text(color = "darkturquoise", size = 8),
+      axis.text.x = element_text(size = 8, color = "darkturquoise"), axis.title.x = element_text(size = 16),
+      axis.text.y = element_text(size = 8, color = "darkturquoise"), axis.title.y = element_text(size = 16)
+    )
+
+graph3 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(alpha = 0.8, size = 1, aes(color = continent)) + 
+  geom_smooth(method = "loess") + 
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme_linedraw()
+
+graph3
+
+```
+
+## Gráficos com alterações nos valores
+
+Aqui temos dois novos gráficos. O segundo, para deixar mais claro ao leitor, a legenda do gdp foi colocar na escala de doláres. Com a mudança na forma de exibição dos valores de x, o gráfico torna-se mais fácil de ler. 
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+
+graph4 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(color = "yellow", alpha=0.8) + 
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE, color = "blue", size = 2, alpha = 0.1) + 
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme_bw() +
+  theme(panel.grid.major = element_line(colour = "gray80", size = 0.2))
+graph4
+
+graph4 + scale_x_log10(labels=scales::dollar)
+```
+
+## Gráficos com gradiente de população
+
+Já, por último, esse gráfico faz um gradiente com a diferença de população através de um gradiente de cores. Assim, analisamos mais uma variável além do gdp e da expectativa de vida em uma imagem apenas.
+
+```{r, message=FALSE, error=FALSE, warning=FALSE}
+
+graph5 <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp)) +
+  geom_point(size = 2, aes(color = log(pop))) + 
+  scale_x_log10() +
+  theme_test() +
+  scale_x_log10(labels = scales::label_number(scale = 1, accuracy = 0.1, prefix = "", suffix = "")) +
+  theme(panel.grid.major = element_line(color = "gray80", size = 0.2),
+        panel.grid.minor = element_line(color = "gray80"))
+
+graph5
+```
+
+
+# Conclusão
+
+Essa versão foi como fazer a parte A, então não encontrei tanta dificuldade. A parte mais díficil foi estilizar um pouco mais os gráficos e fazê-los melhores de ser compreendidos. Os temas (como theme_bw()) foram muito úteis.
+
+![](R.jpg)
